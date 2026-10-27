@@ -17,13 +17,14 @@ bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main
 5. Installs **Bitwarden** and **Telegram** (from Flathub) and **qBittorrent**
 6. Installs **Claude Desktop** and adds you to the `kvm` group for Cowork
 7. Installs **Node.js 24**
-8. Installs the latest **Anki**
-9. Installs **Rev** from the Rev-Windows release (signs in to GitHub, since that repo is private)
-10. Installs the **Rev Sync** add-on into Anki and makes the `~/Rev Sync` folder
-11. Tunes memory (swappiness 10 with 8 GB+ RAM, otherwise zram)
-12. Updates everything
-13. Runs **REA**'s setup for Claude
-14. Offers to restart
+8. Installs **adb and fastboot** (Google's latest, in `~/platform-tools`) with USB access for phones
+9. Installs the latest **Anki**
+10. Installs **Rev** from the Rev-Windows release (signs in to GitHub, since that repo is private)
+11. Installs the **Rev Sync** add-on into Anki and makes the `~/Rev Sync` folder
+12. Tunes memory (swappiness 10 with 8 GB+ RAM, otherwise zram)
+13. Updates everything
+14. Runs **REA**'s setup for Claude
+15. Offers to restart
 
 It's safe to run again: anything already installed is skipped.
 

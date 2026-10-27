@@ -135,6 +135,22 @@ else
         && sudo apt install -y nodejs || fail "Node.js didn't install"
 fi
 
+# ---------- 6b. adb and fastboot ----------
+step "adb and fastboot (Google's latest)"
+# Google's own platform-tools are newer than Mint's, which custom ROM flashing usually needs.
+# The udev rules let your user talk to phones over USB without sudo.
+sudo apt install -y unzip android-sdk-platform-tools-common || fail "USB rules for phones didn't install"
+id -nG "$USER" | grep -qw plugdev || sudo usermod -aG plugdev "$USER"
+if curl -fL --progress-bar -o "$WORK/platform-tools.zip" \
+        https://dl.google.com/android/repository/platform-tools-latest-linux.zip \
+    && rm -rf "$HOME/platform-tools" && unzip -q "$WORK/platform-tools.zip" -d "$HOME"; then
+    grep -q 'platform-tools' "$HOME/.bashrc" 2>/dev/null \
+        || echo 'export PATH="$HOME/platform-tools:$PATH"' >> "$HOME/.bashrc"
+    note "Installed in ~/platform-tools ($("$HOME/platform-tools/adb" version | head -n1))."
+else
+    fail "adb and fastboot didn't download"
+fi
+
 # ---------- 7. Anki ----------
 step "Anki"
 if command -v anki >/dev/null; then
