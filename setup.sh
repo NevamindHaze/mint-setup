@@ -242,6 +242,20 @@ else
     fail "Couldn't download the wallpaper"
 fi
 
+# ---------- 11c. profile picture ----------
+step "Profile picture"
+pfp="$HOME/Pictures/pfp.jpg"
+mkdir -p "$HOME/Pictures"
+if curl -fsSL -o "$pfp" https://raw.githubusercontent.com/NevamindHaze/mint-setup/main/assets/pfp.jpg; then
+    cp "$pfp" "$HOME/.face"
+    # Tell Mint's account service, so the login screen and Menu show it too.
+    sudo busctl call org.freedesktop.Accounts "/org/freedesktop/Accounts/User$(id -u)" \
+        org.freedesktop.Accounts.User SetIconFile s "$pfp" >/dev/null \
+        && note "Set." || fail "Couldn't set the profile picture"
+else
+    fail "Couldn't download the profile picture"
+fi
+
 # ---------- 12. REA ----------
 step "REA for Claude"
 note "Open Claude Desktop and sign in once first if you haven't."
