@@ -23,8 +23,9 @@ bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main
 11. Installs the **Rev Sync** add-on into Anki and makes the `~/Rev Sync` folder
 12. Tunes memory (swappiness 10 with 8 GB+ RAM, otherwise zram)
 13. Updates everything
-14. Runs **REA**'s setup for Claude
-15. Offers to restart
+14. Sets your **wallpaper** (downloaded from Wallhaven)
+15. Runs **REA**'s setup for Claude
+16. Offers to restart
 
 It's safe to run again: anything already installed is skipped.
 

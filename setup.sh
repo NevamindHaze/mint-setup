@@ -219,6 +219,29 @@ fi
 step "Updating everything"
 sudo apt upgrade -y || fail "Updates failed"
 
+# ---------- 11b. wallpaper ----------
+step "Wallpaper"
+# Downloaded from Wallhaven (wallhaven.cc/w/rqeekj) rather than kept in this public repo.
+wall_dir="$HOME/Pictures/walls"
+wall="$wall_dir/wallhaven-rqeekj.png"
+mkdir -p "$wall_dir"
+if [ ! -s "$wall" ]; then
+    for ext in png jpg; do
+        if curl -fsSL -o "$WORK/wall.$ext" "https://w.wallhaven.cc/full/rq/wallhaven-rqeekj.$ext"; then
+            wall="$wall_dir/wallhaven-rqeekj.$ext"
+            mv "$WORK/wall.$ext" "$wall"
+            break
+        fi
+    done
+fi
+if [ -s "$wall" ]; then
+    gsettings set org.cinnamon.desktop.background picture-uri "file://$wall"
+    gsettings set org.cinnamon.desktop.background picture-options zoom
+    note "Set to $wall"
+else
+    fail "Couldn't download the wallpaper"
+fi
+
 # ---------- 12. REA ----------
 step "REA for Claude"
 note "Open Claude Desktop and sign in once first if you haven't."
