@@ -96,16 +96,25 @@ fi
 
 # ---------- 4b. Bitwarden, Telegram, qBittorrent ----------
 step "Bitwarden, Telegram and qBittorrent"
-# Bitwarden and Telegram from Flathub (Mint's built-in app store source; they update with Update Manager).
+# Bitwarden from Flathub (Mint's built-in app store source; it updates with Update Manager).
 command -v flatpak >/dev/null || sudo apt install -y flatpak
 sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-for app in com.bitwarden.desktop org.telegram.desktop; do
-    if flatpak info "$app" >/dev/null 2>&1; then
-        note "$app already installed."
-    else
-        sudo flatpak install -y --noninteractive flathub "$app" || fail "$app didn't install"
-    fi
-done
+if flatpak info com.bitwarden.desktop >/dev/null 2>&1; then
+    note "Bitwarden already installed."
+else
+    sudo flatpak install -y --noninteractive flathub com.bitwarden.desktop || fail "Bitwarden didn't install"
+fi
+# Telegram: the official build, not Flathub's (that one shows a tiny mouse pointer on this laptop).
+# It updates itself and adds itself to the Menu the first time it opens.
+if [ -x "$HOME/Telegram/Telegram" ]; then
+    note "Telegram already installed."
+elif curl -fL --progress-bar -o "$WORK/tsetup.tar.xz" https://telegram.org/dl/desktop/linux \
+    && tar -xf "$WORK/tsetup.tar.xz" -C "$HOME"; then
+    nohup "$HOME/Telegram/Telegram" >/dev/null 2>&1 &
+    note "Telegram opened: log in once and it'll be in the Menu from then on."
+else
+    fail "Telegram didn't install"
+fi
 if installed qbittorrent; then
     note "qBittorrent already installed."
 else

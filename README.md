@@ -14,7 +14,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main
 2. Takes a Timeshift snapshot, if Timeshift is set up
 3. Removes unused apps (asks first): Thunderbird, HexChat, Transmission, Rhythmbox, Hypnotix, Drawing, Pix, Web Apps
 4. Installs the **Helium** browser, and removes Firefox if you say yes
-5. Installs **Bitwarden** and **Telegram** (from Flathub) and **qBittorrent**
+5. Installs **Bitwarden** (from Flathub), **Telegram** (official build) and **qBittorrent**
 6. Installs **Claude Desktop** and adds you to the `kvm` group for Cowork
 7. Installs **Node.js 24**
 8. Installs **adb and fastboot** (Google's latest, in `~/platform-tools`) with USB access for phones
