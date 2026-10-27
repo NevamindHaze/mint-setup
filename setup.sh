@@ -115,6 +115,14 @@ elif curl -fL --progress-bar -o "$WORK/tsetup.tar.xz" https://telegram.org/dl/de
 else
     fail "Telegram didn't install"
 fi
+# Discord: the official .deb, not Flathub's (same tiny-pointer risk as Telegram).
+if installed discord; then
+    note "Discord already installed."
+elif curl -fL --progress-bar -o "$WORK/discord.deb" "https://discord.com/api/download?platform=linux&format=deb"; then
+    sudo apt install -y "$WORK/discord.deb" || fail "Discord didn't install"
+else
+    fail "Discord didn't download"
+fi
 if installed qbittorrent; then
     note "qBittorrent already installed."
 else
