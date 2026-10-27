@@ -3,7 +3,7 @@
 #
 #   bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main/setup.sh)
 #
-# It asks before anything optional (removing apps, removing Firefox), and it is safe to run again:
+# It asks before anything optional (like removing apps), and it is safe to run again:
 # steps that are already done are skipped.
 
 set -u
@@ -40,8 +40,8 @@ if ! command -v apt >/dev/null; then
 fi
 
 echo "${BOLD}Linux Mint setup${RESET}"
-echo "This installs Helium, Claude Desktop, Node.js, REA, Anki, Rev and the Rev Sync add-on,"
-echo "and tidies up Mint. Type your password when asked (nothing shows while you type)."
+echo "This sets up Firefox, Claude Desktop, Node.js, REA, Anki, Rev and the Rev Sync add-on,"
+echo "and tunes Mint to stay fast. Type your password when asked (nothing shows while you type)."
 sudo -v || exit 1
 
 # ---------- 1. basics ----------
@@ -78,20 +78,59 @@ if ask "Remove Thunderbird, HexChat, Transmission, Rhythmbox, Hypnotix, Drawing,
     sudo apt clean
 fi
 
-# ---------- 4. Helium ----------
-step "Helium browser"
-if installed helium-bin; then
+# ---------- 4. Firefox ----------
+step "Firefox"
+# Firefox rather than a Chromium browser like Helium: it shares a few processes across all tabs
+# and unloads tabs when memory runs low, so it stays light on a 6 GB laptop.
+if installed firefox; then
     note "Already installed."
 else
-    curl -fsSL https://raw.githubusercontent.com/imputnet/helium-linux/main/pubkey.asc \
-        | sudo gpg --dearmor --yes -o /usr/share/keyrings/helium.gpg
-    echo "deb [arch=amd64,arm64 signed-by=/usr/share/keyrings/helium.gpg] https://pkg.helium.computer/deb stable main" \
-        | sudo tee /etc/apt/sources.list.d/helium.list >/dev/null
-    sudo apt update && sudo apt install -y helium-bin || fail "Helium didn't install"
+    sudo apt install -y firefox || fail "Firefox didn't install"
 fi
+if installed helium-bin; then
+    sudo apt purge -y helium-bin || fail "Removing Helium failed"
+fi
+sudo rm -f /etc/apt/sources.list.d/helium.list /usr/share/keyrings/helium.gpg
 
-if installed firefox && ask "Remove Firefox? (Import its bookmarks into Helium first if you need them.)" N; then
-    sudo apt remove -y firefox || fail "Removing Firefox failed"
+# Firefox only makes its profile the first time it starts, so start it once without a window.
+ff_dir() {
+    for d in "$HOME/.config/mozilla/firefox" "$HOME/.mozilla/firefox"; do
+        [ -f "$d/installs.ini" ] && { echo "$d"; return; }
+    done
+}
+if command -v firefox >/dev/null; then
+    [ -n "$(ff_dir)" ] || timeout 20 firefox --headless about:blank >/dev/null 2>&1
+    dir=$(ff_dir)
+    profile=$([ -n "$dir" ] && awk -F= '/^Default=/{print $2; exit}' "$dir/installs.ini")
+    case "$profile" in /*) ;; ?*) profile="$dir/$profile" ;; esac
+    if [ -n "$profile" ] && [ -d "$profile" ]; then
+        # Rewritten on every run, so change settings here rather than in that file.
+        cat > "$profile/user.js" <<'EOF'
+// Set by mint-setup: less memory, cooler video playback.
+
+// Memory
+user_pref("browser.tabs.unloadOnLowMemory", true);        // free unused tabs when RAM runs low
+user_pref("browser.sessionstore.restore_on_demand", true); // after a restart, load tabs only when clicked
+user_pref("browser.sessionstore.interval", 60000);         // save session every 60 s instead of 15 s
+user_pref("dom.ipc.processCount", 4);                      // 4 web content processes instead of 8
+user_pref("browser.preferences.defaultPerformanceSettings.enabled", false);
+
+// Hardware video decoding on the Radeon Vega (H.264 / HEVC / VP9)
+user_pref("media.ffmpeg.vaapi.enabled", true);
+user_pref("media.hardware-video-decoding.force-enabled", true);
+
+// Skip background work
+user_pref("browser.newtabpage.activity-stream.feeds.topsites", false);
+user_pref("browser.newtabpage.activity-stream.feeds.section.topstories", false);
+user_pref("browser.newtabpage.activity-stream.showSponsored", false);
+user_pref("browser.newtabpage.activity-stream.showSponsoredTopSites", false);
+user_pref("extensions.pocket.enabled", false);
+EOF
+        note "Tuned for low memory, with hardware video decoding."
+    else
+        fail "Couldn't find Firefox's profile to tune it"
+    fi
+    xdg-settings set default-web-browser firefox.desktop && note "Set as the default browser."
 fi
 
 # ---------- 4b. Bitwarden, Telegram, qBittorrent ----------
@@ -221,15 +260,21 @@ else
     fail "Couldn't download the Folio installer"
 fi
 
-# ---------- 10. memory tuning ----------
-step "Memory tuning"
-ram_gb=$(awk '/MemTotal/{printf "%d", $2/1024/1024 + 0.5}' /proc/meminfo)
-if [ "$ram_gb" -ge 8 ]; then
-    echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf >/dev/null
-    note "${ram_gb} GB RAM: swappiness set to 10."
+# ---------- 10. memory: no freezes when RAM fills up ----------
+step "Memory: no freezes when RAM fills up"
+# earlyoom closes the biggest app (usually a browser tab) before the system starts thrashing,
+# zram adds fast compressed swap in RAM, and swappiness 60 lets the kernel move idle memory there
+# early. (Swappiness 10 with no earlyoom is what froze this laptop for minutes at a time.)
+installed zram-config && sudo apt purge -y zram-config   # older zram setup; zram-tools replaces it
+sudo apt install -y earlyoom zram-tools || fail "earlyoom or zram didn't install"
+printf 'ALGO=zstd\nPERCENT=50\n' | sudo tee /etc/default/zramswap >/dev/null
+sudo systemctl restart zramswap || fail "zram didn't start"
+echo 'vm.swappiness=60' | sudo tee /etc/sysctl.d/99-swappiness.conf >/dev/null
+sudo sysctl -q -p /etc/sysctl.d/99-swappiness.conf
+if systemctl is-active --quiet earlyoom; then
+    note "earlyoom on, $(swapon --show=NAME,SIZE --noheadings | awk '$1=="/dev/zram0"{print $2}') zram, swappiness 60."
 else
-    installed zram-config || sudo apt install -y zram-config
-    note "${ram_gb} GB RAM: zram turned on."
+    fail "earlyoom isn't running"
 fi
 
 # ---------- 11. updates ----------
@@ -259,15 +304,25 @@ else
     fail "Couldn't download the wallpaper"
 fi
 
-# ---------- 13b. Mac look ----------
-step "macOS Golden Gate look"
-if ask "Make the desktop look like macOS (theme, dock, top bar, Spotlight)?" Y; then
-    if curl -fsSL -o "$WORK/mac-look.sh" https://raw.githubusercontent.com/NevamindHaze/mint-setup/main/mac-look.sh; then
-        MAC_LOOK_NO_LOGOUT=1 bash "$WORK/mac-look.sh" || fail "Mac look didn't finish"
-    else
-        fail "Couldn't download the Mac look script"
+# ---------- 13b. snappier desktop ----------
+step "Snappier desktop"
+# Window and menu animations cost CPU and GPU time on integrated graphics.
+for k in desktop-effects desktop-effects-on-menus desktop-effects-on-dialogs \
+         desktop-effects-change-size startup-animation enable-vfade; do
+    gsettings set org.cinnamon "$k" false
+done
+# Startup apps that do nothing here: the Welcome screen, the System Reports tray, Evolution's
+# calendar alarms and, without an NVIDIA card, nvidia-prime.
+mkdir -p "$HOME/.config/autostart"
+for n in mintwelcome mintreport org.gnome.Evolution-alarm-notify nvidia-prime; do
+    [ "$n" = nvidia-prime ] && lspci | grep -qi nvidia && continue
+    src=/etc/xdg/autostart/$n.desktop
+    dst=$HOME/.config/autostart/$n.desktop
+    if [ -f "$src" ] && [ ! -e "$dst" ]; then
+        cp "$src" "$dst" && printf 'Hidden=true\nX-GNOME-Autostart-enabled=false\n' >> "$dst"
     fi
-fi
+done
+note "Animations off, and fewer apps start with the desktop. Turn either back on in System Settings."
 
 # ---------- 11c. profile picture ----------
 step "Profile picture"
@@ -303,7 +358,7 @@ echo "Still to do by hand:"
 echo "  - Anki: sign in under Tools > Sync."
 echo "  - Rev: Settings > Sync with Anki > Choose folder > 'Rev Sync' in your home folder."
 echo "  - iPhone: Anki > Tools > Rev Sync Wi-Fi..., then Rev on iPhone > Settings > Sync over Wi-Fi."
-echo "  - Helium: turn on Helium services if you want extensions; set it as default in Preferred Applications."
+echo "  - Firefox: add uBlock Origin from addons.mozilla.org (pages load far less code with it)."
 echo
 if ask "Restart now? (Needed for Claude's Cowork and some settings.)" Y; then
     systemctl reboot -i
