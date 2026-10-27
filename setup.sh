@@ -213,6 +213,14 @@ else
 fi
 mkdir -p "$HOME/Rev Sync"
 
+# ---------- 9b. Folio ----------
+step "Folio (PDF reader)"
+if curl -fsSL -o "$WORK/install-folio.sh" https://raw.githubusercontent.com/NevamindHaze/mint-setup/main/install-folio.sh; then
+    bash "$WORK/install-folio.sh" || fail "Folio didn't install"
+else
+    fail "Couldn't download the Folio installer"
+fi
+
 # ---------- 10. memory tuning ----------
 step "Memory tuning"
 ram_gb=$(awk '/MemTotal/{printf "%d", $2/1024/1024 + 0.5}' /proc/meminfo)

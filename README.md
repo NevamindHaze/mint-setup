@@ -21,12 +21,13 @@ bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main
 9. Installs the latest **Anki**
 10. Installs **Rev** from the Rev-Windows release (signs in to GitHub, since that repo is private)
 11. Installs the **Rev Sync** add-on into Anki and makes the `~/Rev Sync` folder
-12. Tunes memory (swappiness 10 with 8 GB+ RAM, otherwise zram)
-13. Updates everything
-14. Sets your **wallpaper** (downloaded from Wallhaven)
-15. Sets your **profile picture** (`assets/pfp.jpg`)
-16. Runs **REA**'s setup for Claude
-17. Offers to restart
+12. Installs **Folio**, my PDF reader, and offers to make it the default for PDFs
+13. Tunes memory (swappiness 10 with 8 GB+ RAM, otherwise zram)
+14. Updates everything
+15. Sets your **wallpaper** (downloaded from Wallhaven)
+16. Sets your **profile picture** (`assets/pfp.jpg`)
+17. Runs **REA**'s setup for Claude
+18. Offers to restart
 
 It's safe to run again: anything already installed is skipped.
 
@@ -36,3 +37,11 @@ It's safe to run again: anything already installed is skipped.
 - **Rev:** Settings → Sync with Anki → Choose folder → `Rev Sync` in your home folder.
 - **iPhone:** in Anki, Tools → Rev Sync Wi-Fi…; on the iPhone, Rev → Settings → Sync over Wi-Fi.
 - **Helium:** set it as default (Menu → Preferred Applications → Web).
+
+## Just Folio
+
+To install or update only Folio:
+
+```
+bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main/install-folio.sh)
+```
