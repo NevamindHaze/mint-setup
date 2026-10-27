@@ -94,6 +94,24 @@ if installed firefox && ask "Remove Firefox? (Import its bookmarks into Helium f
     sudo apt remove -y firefox || fail "Removing Firefox failed"
 fi
 
+# ---------- 4b. Bitwarden, Telegram, qBittorrent ----------
+step "Bitwarden, Telegram and qBittorrent"
+# Bitwarden and Telegram from Flathub (Mint's built-in app store source; they update with Update Manager).
+command -v flatpak >/dev/null || sudo apt install -y flatpak
+sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+for app in com.bitwarden.desktop org.telegram.desktop; do
+    if flatpak info "$app" >/dev/null 2>&1; then
+        note "$app already installed."
+    else
+        sudo flatpak install -y --noninteractive flathub "$app" || fail "$app didn't install"
+    fi
+done
+if installed qbittorrent; then
+    note "qBittorrent already installed."
+else
+    sudo apt install -y qbittorrent || fail "qBittorrent didn't install"
+fi
+
 # ---------- 5. Claude Desktop ----------
 step "Claude Desktop"
 if installed claude-desktop; then

@@ -14,15 +14,16 @@ bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main
 2. Takes a Timeshift snapshot, if Timeshift is set up
 3. Removes unused apps (asks first): Thunderbird, HexChat, Transmission, Rhythmbox, Hypnotix, Drawing, Pix, Web Apps
 4. Installs the **Helium** browser, and removes Firefox if you say yes
-5. Installs **Claude Desktop** and adds you to the `kvm` group for Cowork
-6. Installs **Node.js 24**
-7. Installs the latest **Anki**
-8. Installs **Rev** from the Rev-Windows release (signs in to GitHub, since that repo is private)
-9. Installs the **Rev Sync** add-on into Anki and makes the `~/Rev Sync` folder
-10. Tunes memory (swappiness 10 with 8 GB+ RAM, otherwise zram)
-11. Updates everything
-12. Runs **REA**'s setup for Claude
-13. Offers to restart
+5. Installs **Bitwarden** and **Telegram** (from Flathub) and **qBittorrent**
+6. Installs **Claude Desktop** and adds you to the `kvm` group for Cowork
+7. Installs **Node.js 24**
+8. Installs the latest **Anki**
+9. Installs **Rev** from the Rev-Windows release (signs in to GitHub, since that repo is private)
+10. Installs the **Rev Sync** add-on into Anki and makes the `~/Rev Sync` folder
+11. Tunes memory (swappiness 10 with 8 GB+ RAM, otherwise zram)
+12. Updates everything
+13. Runs **REA**'s setup for Claude
+14. Offers to restart
 
 It's safe to run again: anything already installed is skipped.
 
