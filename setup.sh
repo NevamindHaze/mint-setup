@@ -259,6 +259,16 @@ else
     fail "Couldn't download the wallpaper"
 fi
 
+# ---------- 13b. Mac look ----------
+step "macOS Golden Gate look"
+if ask "Make the desktop look like macOS (theme, dock, top bar, Spotlight)?" Y; then
+    if curl -fsSL -o "$WORK/mac-look.sh" https://raw.githubusercontent.com/NevamindHaze/mint-setup/main/mac-look.sh; then
+        MAC_LOOK_NO_LOGOUT=1 bash "$WORK/mac-look.sh" || fail "Mac look didn't finish"
+    else
+        fail "Couldn't download the Mac look script"
+    fi
+fi
+
 # ---------- 11c. profile picture ----------
 step "Profile picture"
 pfp="$HOME/Pictures/pfp.jpg"

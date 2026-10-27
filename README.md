@@ -24,10 +24,11 @@ bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main
 12. Installs **Folio**, my PDF reader, and offers to make it the default for PDFs
 13. Tunes memory (swappiness 10 with 8 GB+ RAM, otherwise zram)
 14. Updates everything
-15. Sets your **wallpaper** (downloaded from Wallhaven)
-16. Sets your **profile picture** (`assets/pfp.jpg`)
-17. Runs **REA**'s setup for Claude
-18. Offers to restart
+15. Makes the desktop look like **macOS 27 Golden Gate** (asks first; see below)
+16. Sets your **wallpaper** (downloaded from Wallhaven)
+17. Sets your **profile picture** (`assets/pfp.jpg`)
+18. Runs **REA**'s setup for Claude
+19. Offers to restart
 
 It's safe to run again: anything already installed is skipped.
 
@@ -44,4 +45,21 @@ To install or update only Folio:
 
 ```
 bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main/install-folio.sh)
+```
+
+## Just the Mac look
+
+WhiteSur window theme, icons and pointer, traffic-light buttons on the left, a menu bar at the top,
+a Plank dock, Ulauncher as Spotlight (`Ctrl+Space`), the Inter font, a matching login screen, and light
+mode from 7:00 to 19:00 with dark mode at night (switch by hand with `mac-look-mode light`, `dark` or `auto`).
+Your wallpaper isn't changed.
+
+```
+bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main/mac-look.sh)
+```
+
+To go back to how it looked before:
+
+```
+bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main/mac-look.sh) --undo
 ```
