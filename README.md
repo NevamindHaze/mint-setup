@@ -24,7 +24,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main
 2. Takes a Timeshift snapshot, if Timeshift is set up
 3. Removes unused apps (asks first): Thunderbird, HexChat, Transmission, Rhythmbox, Hypnotix, Drawing, Pix, Web Apps
 4. Sets up **Firefox** as the default browser, tuned for low memory and hardware video decoding (removes Helium if it's there)
-5. Installs **Bitwarden** (from Flathub), **Telegram** (official build) and **qBittorrent**
+5. Installs **Bitwarden** (from Flathub), **Telegram** (official build) and **qBittorrent**, and makes Flatpak apps use your normal-size mouse pointer
 6. Installs **Claude Desktop** and adds you to the `kvm` group for Cowork
 7. Installs **Node.js 24**
 8. Installs **adb and fastboot** (Google's latest, in `~/platform-tools`) with USB access for phones
@@ -82,7 +82,7 @@ The script lists any steps that failed at the end; you can simply run it again, 
 - **"404 Not Found" downloading Rev:** Rev-Windows is private, so it can only be downloaded while signed in to GitHub. Run `gh auth login` and try again.
 - **A new app doesn't show in the Menu:** press **Ctrl + Alt + Esc** to refresh the desktop, or log out and back in.
 - **"command not found" right after installing adb/fastboot:** open a new Terminal, or run `source ~/.bashrc`.
-- **Tiny mouse pointer in an app:** this happens with some Flathub apps, which is why Telegram is installed from telegram.org instead.
+- **Tiny mouse pointer in an app:** Flathub apps can't see your cursor theme or screen scale. The script fixes this for all of them; if you change the pointer size later, run the setup again (or `flatpak override --user --env=XCURSOR_SIZE=<size × 2>`). Telegram is installed from telegram.org instead of Flathub for the same reason.
 - **Anki shows an error about Rev Sync:** update the add-on by running the setup again (or re-installing `rev_sync` from the Rev repository), then restart Anki.
 - **The laptop slows down and fans spin up while mostly idle:** check `sensors`. Around 70 °C at low load usually means dust in the fan or dried thermal paste, not a setting.
 - **A Firefox tab reloads when you go back to it:** Firefox unloaded it to free memory; that's expected.

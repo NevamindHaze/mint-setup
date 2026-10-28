@@ -143,6 +143,17 @@ if flatpak info com.bitwarden.desktop >/dev/null 2>&1; then
 else
     sudo flatpak install -y --noninteractive flathub com.bitwarden.desktop || fail "Bitwarden didn't install"
 fi
+# Flatpak apps can't see the system cursor theme or the screen scale, so they show a tiny pointer.
+# Point every Flatpak app at the host's cursors, at the desktop's size times the scale (2x here).
+cursor_theme=$(gsettings get org.cinnamon.desktop.interface cursor-theme | tr -d "'")
+cursor_size=$(gsettings get org.cinnamon.desktop.interface cursor-size)
+dpi=$(xrdb -query 2>/dev/null | awk '/^Xft.dpi:/{print int($2)}')
+cursor_scale=$(( (${dpi:-96} + 48) / 96 ))
+[ "$cursor_scale" -ge 1 ] || cursor_scale=1
+flatpak override --user --env=XCURSOR_PATH=/run/host/share/icons:/usr/share/icons \
+    --env=XCURSOR_THEME="$cursor_theme" --env=XCURSOR_SIZE=$(( cursor_size * cursor_scale )) \
+    && note "Flatpak apps use the $cursor_theme pointer at $(( cursor_size * cursor_scale )) px." \
+    || fail "Couldn't set the Flatpak pointer"
 # Telegram: the official build, not Flathub's (that one shows a tiny mouse pointer on this laptop).
 # It updates itself and adds itself to the Menu the first time it opens.
 if [ -x "$HOME/Telegram/Telegram" ]; then
