@@ -24,7 +24,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main
 2. Takes a Timeshift snapshot, if Timeshift is set up
 3. Removes unused apps (asks first): Thunderbird, HexChat, Transmission, Rhythmbox, Hypnotix, Drawing, Pix, Web Apps
 4. Sets up **Firefox** as the default browser, tuned for low memory and hardware video decoding (removes Helium if it's there)
-5. Installs **Bitwarden** (from Flathub), **Telegram** (official build) and **qBittorrent**, and makes Flatpak apps use your normal-size mouse pointer
+5. Installs **Bitwarden** and **Blip** (from Flathub), **Telegram** (official build) and **qBittorrent**, and makes Flatpak apps use your normal-size mouse pointer
 6. Installs **Claude Desktop** and adds you to the `kvm` group for Cowork
 7. Installs **Node.js 24**
 8. Installs **adb and fastboot** (Google's latest, in `~/platform-tools`) with USB access for phones
@@ -47,6 +47,7 @@ It's safe to run again: anything already installed is skipped.
 - **Anki:** Tools → Sync, sign in to AnkiWeb.
 - **Rev:** Settings → Sync with Anki → Choose folder → `Rev Sync` in your home folder.
 - **iPhone:** in Anki, Tools → Rev Sync Wi-Fi…; on the iPhone, Rev → Settings → Sync over Wi-Fi.
+- **Blip:** open it from the Menu and sign in with the same email as on your phone, so your devices see each other.
 - **Firefox:** add [uBlock Origin](https://addons.mozilla.org/firefox/addon/ublock-origin/); pages load far less code with it.
 
 ## Daily tips

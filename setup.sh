@@ -134,15 +134,19 @@ EOF
 fi
 
 # ---------- 4b. Bitwarden, Telegram, qBittorrent ----------
-step "Bitwarden, Telegram and qBittorrent"
-# Bitwarden from Flathub (Mint's built-in app store source; it updates with Update Manager).
+step "Bitwarden, Blip, Telegram and qBittorrent"
+# Bitwarden and Blip from Flathub (Mint's built-in app store source; they update with Update Manager).
+# Blip is also on the Snap Store, but Mint turns Snap off, so Flathub it is.
 command -v flatpak >/dev/null || sudo apt install -y flatpak
 sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-if flatpak info com.bitwarden.desktop >/dev/null 2>&1; then
-    note "Bitwarden already installed."
-else
-    sudo flatpak install -y --noninteractive flathub com.bitwarden.desktop || fail "Bitwarden didn't install"
-fi
+for app in "Bitwarden com.bitwarden.desktop" "Blip net.blip.Blip"; do
+    read -r name id <<<"$app"
+    if flatpak info "$id" >/dev/null 2>&1; then
+        note "$name already installed."
+    else
+        sudo flatpak install -y --noninteractive flathub "$id" || fail "$name didn't install"
+    fi
+done
 # Flatpak apps can't see the system cursor theme or the screen scale, so they show a tiny pointer.
 # Point every Flatpak app at the host's cursors, at the desktop's size times the scale (2x here).
 cursor_theme=$(gsettings get org.cinnamon.desktop.interface cursor-theme | tr -d "'")
@@ -369,6 +373,7 @@ echo "Still to do by hand:"
 echo "  - Anki: sign in under Tools > Sync."
 echo "  - Rev: Settings > Sync with Anki > Choose folder > 'Rev Sync' in your home folder."
 echo "  - iPhone: Anki > Tools > Rev Sync Wi-Fi..., then Rev on iPhone > Settings > Sync over Wi-Fi."
+echo "  - Blip: open it and sign in with the same email as on your phone."
 echo "  - Firefox: add uBlock Origin from addons.mozilla.org (pages load far less code with it)."
 echo
 if ask "Restart now? (Needed for Claude's Cowork and some settings.)" Y; then
