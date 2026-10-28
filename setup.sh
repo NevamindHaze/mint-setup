@@ -60,14 +60,19 @@ fi
 
 # ---------- 3. remove unused apps ----------
 step "Removing apps you don't use"
-if ask "Remove Thunderbird, HexChat, Transmission, Rhythmbox, Hypnotix, Drawing, Pix and Web Apps?" Y; then
-    # Keep Mint's core packages so the cleanup below can't remove them.
-    core=$(apt-cache depends mint-meta-cinnamon 2>/dev/null | awk '/Depends|Recommends/{print $2}' | grep -v '<')
+if ask "Remove LibreOffice, Thunderbird, HexChat, Transmission, Rhythmbox, Hypnotix, Drawing, Pix and Web Apps?" Y; then
+    # Keep Mint's core packages so the cleanup below can't remove them (but not LibreOffice,
+    # which Mint only recommends, so removing it leaves the rest of Mint alone).
+    core=$(apt-cache depends mint-meta-cinnamon 2>/dev/null | awk '/Depends|Recommends/{print $2}' \
+        | grep -v '<' | grep -v '^libreoffice')
     [ -n "$core" ] && echo "$core" | xargs sudo apt-mark manual >/dev/null
     remove=()
     for p in thunderbird hexchat transmission-gtk rhythmbox hypnotix drawing pix webapp-manager; do
         installed "$p" && remove+=("$p")
     done
+    # LibreOffice is split into many packages (Writer, Calc, languages, help...), so take them all.
+    while read -r p; do remove+=("$p"); done < <(
+        dpkg-query -W -f='${db:Status-Abbrev} ${Package}\n' 'libreoffice*' 2>/dev/null | awk '/^ii/{print $2}')
     if [ ${#remove[@]} -gt 0 ]; then
         sudo apt purge -y "${remove[@]}" || fail "Removing apps failed"
     else
