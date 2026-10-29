@@ -37,8 +37,9 @@ bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main
 15. Sets your **wallpaper** (downloaded from Wallhaven)
 16. Makes the desktop snappier: turns off animations and stops startup apps that do nothing (Welcome screen, System Reports tray, calendar alarms, nvidia-prime without an NVIDIA card)
 17. Sets your **profile picture** (`assets/pfp.jpg`)
-18. Runs **REA**'s setup for Claude
-19. Offers to restart
+18. Installs the **Claude toolkit**: Claude Code, the Ponytail, LinkedIn Skills, Replica and Taste Skill plugins, the 67 `design-*` skills and OpenMontage (`~/OpenMontage`); see [claude-toolkit-guide](https://github.com/NevamindHaze/claude-toolkit-guide)
+19. Runs **REA**'s setup for Claude
+20. Offers to restart
 
 It's safe to run again: anything already installed is skipped.
 
@@ -76,6 +77,16 @@ What's different from Mint:
 - zram uses Arch's `zram-generator`. Your user joins `adbusers` (instead of `plugdev`) for USB access to phones.
 - There's no step to remove unused apps, since Arch doesn't install them. The wallpaper and animation steps run only on Cinnamon.
 
+## Just the Claude toolkit
+
+To install or update only the Claude toolkit (Mint or Arch; needs Node.js, git, make, Python 3, FFmpeg and Chromium):
+
+```
+bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main/install-claude-toolkit.sh)
+```
+
+Superpowers, Code Review, Security Guidance, Frontend Design, Superdesign and Context7 come with the Claude desktop app, so they aren't in it. API keys for OpenMontage go in `~/OpenMontage/.env` by hand.
+
 ## Just Folio
 
 To install or update only Folio:
@@ -90,6 +101,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main
 | --- | --- |
 | `setup.sh` | The main script: everything above, in order |
 | `arch-setup.sh` | The same setup for Arch Linux |
+| `install-claude-toolkit.sh` | Installs or updates only the Claude toolkit (Mint and Arch) |
 | `install-folio.sh` | Installs or updates only Folio (Mint) |
 | `assets/pfp.jpg` | My profile picture |
 

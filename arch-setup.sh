@@ -298,6 +298,16 @@ else
     fail "Couldn't download the profile picture"
 fi
 
+# ---------- 12b. Claude toolkit ----------
+step "Claude toolkit (Claude Code, plugins, design skills, OpenMontage)"
+# Python and FFmpeg for OpenMontage; Chromium for Taste Skill's browser check.
+pkg python ffmpeg chromium || fail "The Claude toolkit's tools didn't install"
+if curl -fsSL -o "$WORK/install-claude-toolkit.sh" https://raw.githubusercontent.com/NevamindHaze/mint-setup/main/install-claude-toolkit.sh; then
+    bash "$WORK/install-claude-toolkit.sh" || fail "Part of the Claude toolkit didn't install"
+else
+    fail "Couldn't download the Claude toolkit installer"
+fi
+
 # ---------- 13. REA ----------
 step "REA for Claude"
 note "Open Claude Desktop and sign in once first if you haven't."
