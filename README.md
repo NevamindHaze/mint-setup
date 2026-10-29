@@ -60,6 +60,22 @@ It's safe to run again: anything already installed is skipped.
 | See what earlyoom closed | `journalctl -u earlyoom` |
 | Check adb / fastboot | `adb devices`, or `fastboot devices` with the phone in bootloader mode |
 
+## On Arch Linux
+
+`arch-setup.sh` does the same on Arch (made for the Cinnamon desktop):
+
+```
+bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main/arch-setup.sh)
+```
+
+What's different from Mint:
+
+- Apps come from Arch's own repositories (Bitwarden, Telegram, Anki, Node.js, adb/fastboot and more), so `sudo pacman -Syu` updates them. Only **Blip** comes from Flathub, since Arch doesn't have it.
+- It installs **yay** and uses it for **Claude Desktop**, which is in the AUR as a repackaged copy of Anthropic's official .deb. Update it with `yay -Syu`.
+- **Rev** goes in `~/.local/share/Rev` (from the release's Linux build) with a Menu entry.
+- zram uses Arch's `zram-generator`. Your user joins `adbusers` (instead of `plugdev`) for USB access to phones.
+- There's no step to remove unused apps, since Arch doesn't install them. The wallpaper and animation steps run only on Cinnamon.
+
 ## Just Folio
 
 To install or update only Folio:
@@ -73,7 +89,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main
 | File | What it is |
 | --- | --- |
 | `setup.sh` | The main script: everything above, in order |
-| `install-folio.sh` | Installs or updates only Folio |
+| `arch-setup.sh` | The same setup for Arch Linux |
+| `install-folio.sh` | Installs or updates only Folio (Mint) |
 | `assets/pfp.jpg` | My profile picture |
 
 ## If something goes wrong
