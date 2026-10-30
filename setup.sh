@@ -40,7 +40,7 @@ if ! command -v apt >/dev/null; then
 fi
 
 echo "${BOLD}Linux Mint setup${RESET}"
-echo "This sets up Firefox, Claude Desktop, Node.js, REA, Anki, Rev and the Rev Sync add-on,"
+echo "This sets up Helium, Claude Desktop, Node.js, REA, Anki, Rev and the Rev Sync add-on,"
 echo "and tunes Mint to stay fast. Type your password when asked (nothing shows while you type)."
 sudo -v || exit 1
 
@@ -60,14 +60,14 @@ fi
 
 # ---------- 3. remove unused apps ----------
 step "Removing apps you don't use"
-if ask "Remove LibreOffice, KDE Connect, Thunderbird, HexChat, Transmission, Rhythmbox, Hypnotix, Drawing, Pix and Web Apps?" Y; then
-    # Keep Mint's core packages so the cleanup below can't remove them (but not LibreOffice or
-    # KDE Connect, which Mint only recommends, so removing them leaves the rest of Mint alone).
+if ask "Remove LibreOffice, Thunderbird, HexChat, Transmission, Rhythmbox, Hypnotix, Drawing, Pix and Web Apps?" Y; then
+    # Keep Mint's core packages so the cleanup below can't remove them (but not LibreOffice,
+    # which Mint only recommends, so removing it leaves the rest of Mint alone).
     core=$(apt-cache depends mint-meta-cinnamon 2>/dev/null | awk '/Depends|Recommends/{print $2}' \
-        | grep -v '<' | grep -Ev '^(libreoffice|kdeconnect)')
+        | grep -v '<' | grep -v '^libreoffice')
     [ -n "$core" ] && echo "$core" | xargs sudo apt-mark manual >/dev/null
     remove=()
-    for p in kdeconnect thunderbird hexchat transmission-gtk rhythmbox hypnotix drawing pix webapp-manager; do
+    for p in thunderbird hexchat transmission-gtk rhythmbox hypnotix drawing pix webapp-manager; do
         installed "$p" && remove+=("$p")
     done
     # LibreOffice is split into many packages (Writer, Calc, languages, help...), so take them all.
@@ -82,60 +82,28 @@ if ask "Remove LibreOffice, KDE Connect, Thunderbird, HexChat, Transmission, Rhy
     sudo apt autoremove --purge
     sudo apt clean
 fi
+# KDE Connect stays (and comes back if an earlier version of this script removed it).
+if ! installed kdeconnect; then
+    sudo apt install -y kdeconnect || fail "KDE Connect didn't install"
+fi
 
-# ---------- 4. Firefox ----------
-step "Firefox"
-# Firefox rather than a Chromium browser like Helium: it shares a few processes across all tabs
-# and unloads tabs when memory runs low, so it stays light on a 6 GB laptop.
-if installed firefox; then
+# ---------- 4. Helium ----------
+step "Helium browser"
+if installed helium-bin; then
     note "Already installed."
 else
-    sudo apt install -y firefox || fail "Firefox didn't install"
+    curl -fsSL https://raw.githubusercontent.com/imputnet/helium-linux/main/pubkey.asc \
+        | sudo gpg --dearmor --yes -o /usr/share/keyrings/helium.gpg
+    echo "deb [arch=amd64,arm64 signed-by=/usr/share/keyrings/helium.gpg] https://pkg.helium.computer/deb stable main" \
+        | sudo tee /etc/apt/sources.list.d/helium.list >/dev/null
+    sudo apt update && sudo apt install -y helium-bin || fail "Helium didn't install"
 fi
 if installed helium-bin; then
-    sudo apt purge -y helium-bin || fail "Removing Helium failed"
+    xdg-settings set default-web-browser helium.desktop && note "Set as the default browser."
 fi
-sudo rm -f /etc/apt/sources.list.d/helium.list /usr/share/keyrings/helium.gpg
 
-# Firefox only makes its profile the first time it starts, so start it once without a window.
-ff_dir() {
-    for d in "$HOME/.config/mozilla/firefox" "$HOME/.mozilla/firefox"; do
-        [ -f "$d/installs.ini" ] && { echo "$d"; return; }
-    done
-}
-if command -v firefox >/dev/null; then
-    [ -n "$(ff_dir)" ] || timeout 20 firefox --headless about:blank >/dev/null 2>&1
-    dir=$(ff_dir)
-    profile=$([ -n "$dir" ] && awk -F= '/^Default=/{print $2; exit}' "$dir/installs.ini")
-    case "$profile" in /*) ;; ?*) profile="$dir/$profile" ;; esac
-    if [ -n "$profile" ] && [ -d "$profile" ]; then
-        # Rewritten on every run, so change settings here rather than in that file.
-        cat > "$profile/user.js" <<'EOF'
-// Set by mint-setup: less memory, cooler video playback.
-
-// Memory
-user_pref("browser.tabs.unloadOnLowMemory", true);        // free unused tabs when RAM runs low
-user_pref("browser.sessionstore.restore_on_demand", true); // after a restart, load tabs only when clicked
-user_pref("browser.sessionstore.interval", 60000);         // save session every 60 s instead of 15 s
-user_pref("dom.ipc.processCount", 4);                      // 4 web content processes instead of 8
-user_pref("browser.preferences.defaultPerformanceSettings.enabled", false);
-
-// Hardware video decoding on the Radeon Vega (H.264 / HEVC / VP9)
-user_pref("media.ffmpeg.vaapi.enabled", true);
-user_pref("media.hardware-video-decoding.force-enabled", true);
-
-// Skip background work
-user_pref("browser.newtabpage.activity-stream.feeds.topsites", false);
-user_pref("browser.newtabpage.activity-stream.feeds.section.topstories", false);
-user_pref("browser.newtabpage.activity-stream.showSponsored", false);
-user_pref("browser.newtabpage.activity-stream.showSponsoredTopSites", false);
-user_pref("extensions.pocket.enabled", false);
-EOF
-        note "Tuned for low memory, with hardware video decoding."
-    else
-        fail "Couldn't find Firefox's profile to tune it"
-    fi
-    xdg-settings set default-web-browser firefox.desktop && note "Set as the default browser."
+if installed firefox && ask "Remove Firefox? (Import its bookmarks into Helium first if you need them.)" N; then
+    sudo apt purge -y firefox || fail "Removing Firefox failed"
 fi
 
 # ---------- 4b. Bitwarden, Telegram, qBittorrent ----------
@@ -389,7 +357,7 @@ echo "  - Anki: sign in under Tools > Sync."
 echo "  - Rev: Settings > Sync with Anki > Choose folder > 'Rev Sync' in your home folder."
 echo "  - iPhone: Anki > Tools > Rev Sync Wi-Fi..., then Rev on iPhone > Settings > Sync over Wi-Fi."
 echo "  - Blip: open it and sign in with the same email as on your phone."
-echo "  - Firefox: add uBlock Origin from addons.mozilla.org (pages load far less code with it)."
+echo "  - Helium: uBlock Origin is built in; turn on Helium services in Settings if you want other extensions."
 echo
 if ask "Restart now? (Needed for Claude's Cowork and some settings.)" Y; then
     systemctl reboot -i
