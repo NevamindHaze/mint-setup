@@ -60,14 +60,14 @@ fi
 
 # ---------- 3. remove unused apps ----------
 step "Removing apps you don't use"
-if ask "Remove LibreOffice, KDE Connect, Thunderbird, HexChat, Transmission, Rhythmbox, Hypnotix, Drawing, Pix and Web Apps?" Y; then
-    # Keep Mint's core packages so the cleanup below can't remove them (but not LibreOffice or
-    # KDE Connect, which Mint only recommends, so removing them leaves the rest of Mint alone).
+if ask "Remove LibreOffice, Thunderbird, HexChat, Transmission, Rhythmbox, Hypnotix, Drawing, Pix and Web Apps?" Y; then
+    # Keep Mint's core packages so the cleanup below can't remove them (but not LibreOffice,
+    # which Mint only recommends, so removing it leaves the rest of Mint alone).
     core=$(apt-cache depends mint-meta-cinnamon 2>/dev/null | awk '/Depends|Recommends/{print $2}' \
-        | grep -v '<' | grep -Ev '^(libreoffice|kdeconnect)')
+        | grep -v '<' | grep -v '^libreoffice')
     [ -n "$core" ] && echo "$core" | xargs sudo apt-mark manual >/dev/null
     remove=()
-    for p in kdeconnect thunderbird hexchat transmission-gtk rhythmbox hypnotix drawing pix webapp-manager; do
+    for p in thunderbird hexchat transmission-gtk rhythmbox hypnotix drawing pix webapp-manager; do
         installed "$p" && remove+=("$p")
     done
     # LibreOffice is split into many packages (Writer, Calc, languages, help...), so take them all.
@@ -81,6 +81,10 @@ if ask "Remove LibreOffice, KDE Connect, Thunderbird, HexChat, Transmission, Rhy
     note "Check this list before typing y. If it shows cinnamon, xorg, lightdm or nemo, type n."
     sudo apt autoremove --purge
     sudo apt clean
+fi
+# KDE Connect stays (and comes back if an earlier version of this script removed it).
+if ! installed kdeconnect; then
+    sudo apt install -y kdeconnect || fail "KDE Connect didn't install"
 fi
 
 # ---------- 4. Helium ----------
