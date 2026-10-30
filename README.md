@@ -23,7 +23,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main
 1. Installs basic tools (curl, git, zstd and the libraries Anki needs)
 2. Takes a Timeshift snapshot, if Timeshift is set up
 3. Removes unused apps (asks first): LibreOffice, Thunderbird, HexChat, Transmission, Rhythmbox, Hypnotix, Drawing, Pix, Web Apps. Keeps **KDE Connect**, and reinstalls it if it was removed
-4. Installs the **Helium** browser from its official apt repository and sets it as the default (asks before removing Firefox)
+4. Installs the **Helium** browser from its official apt repository and sets it as the default and removes Firefox (asks first)
 5. Installs **Bitwarden** and **Blip** (from Flathub), **Telegram** (official build) and **qBittorrent**, and makes Flatpak apps use your normal-size mouse pointer
 6. Installs **Claude Desktop** and adds you to the `kvm` group for Cowork
 7. Installs **Node.js 24**
