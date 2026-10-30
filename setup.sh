@@ -102,7 +102,7 @@ if installed helium-bin; then
     xdg-settings set default-web-browser helium.desktop && note "Set as the default browser."
 fi
 
-if installed firefox && ask "Remove Firefox? (Import its bookmarks into Helium first if you need them.)" N; then
+if installed firefox && ask "Remove Firefox? (Import its bookmarks into Helium first if you need them.)" Y; then
     sudo apt purge -y firefox || fail "Removing Firefox failed"
 fi
 
