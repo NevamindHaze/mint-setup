@@ -47,7 +47,7 @@ sudo -v || exit 1
 # ---------- 1. basics ----------
 step "Installing basic tools"
 sudo apt update
-sudo apt install -y curl wget gnupg zstd git libxcb-xinerama0 libxcb-cursor0 libnss3 \
+sudo apt install -y curl wget gnupg zstd git libxcb-xinerama0 libxcb-cursor0 libnss3 libxcb-icccm4 libxcb-keysyms1 \
     || fail "Basic tools didn't install"
 
 # ---------- 2. safety snapshot ----------
