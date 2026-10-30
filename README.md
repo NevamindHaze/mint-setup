@@ -61,26 +61,9 @@ It's safe to run again: anything already installed is skipped.
 | See what earlyoom closed | `journalctl -u earlyoom` |
 | Check adb / fastboot | `adb devices`, or `fastboot devices` with the phone in bootloader mode |
 
-## On Arch Linux
-
-`arch-setup.sh` does the same on Arch (made for the Cinnamon desktop):
-
-```
-bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main/arch-setup.sh)
-```
-
-What's different from Mint:
-
-- Apps come from Arch's own repositories (Bitwarden, Telegram, Anki, Node.js, adb/fastboot and more), so `sudo pacman -Syu` updates them. Only **Blip** comes from Flathub, since Arch doesn't have it.
-- It installs **yay** and uses it for **Claude Desktop**, which is in the AUR as a repackaged copy of Anthropic's official .deb. Update it with `yay -Syu`.
-- **Rev** goes in `~/.local/share/Rev` (from the release's Linux build) with a Menu entry.
-- zram uses Arch's `zram-generator`. Your user joins `adbusers` (instead of `plugdev`) for USB access to phones.
-- The browser is **Firefox** (tuned for low memory and hardware video decoding), not Helium. Add [uBlock Origin](https://addons.mozilla.org/firefox/addon/ublock-origin/) to it.
-- There's no step to remove unused apps, since Arch doesn't install them. The wallpaper and animation steps run only on Cinnamon.
-
 ## Just the Claude toolkit
 
-To install or update only the Claude toolkit (Mint or Arch; needs Node.js, git, make, Python 3, FFmpeg and Chromium):
+To install or update only the Claude toolkit (needs Node.js, git, make, Python 3, FFmpeg and Chromium):
 
 ```
 bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main/install-claude-toolkit.sh)
@@ -101,8 +84,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main
 | File | What it is |
 | --- | --- |
 | `setup.sh` | The main script: everything above, in order |
-| `arch-setup.sh` | The same setup for Arch Linux |
-| `install-claude-toolkit.sh` | Installs or updates only the Claude toolkit (Mint and Arch) |
+| `install-claude-toolkit.sh` | Installs or updates only the Claude toolkit |
 | `install-folio.sh` | Installs or updates only Folio (Mint) |
 | `assets/pfp.jpg` | My profile picture |
 
@@ -116,7 +98,6 @@ The script lists any steps that failed at the end; you can simply run it again, 
 - **Tiny mouse pointer in an app:** Flathub apps can't see your cursor theme or screen scale. The script fixes this for all of them; if you change the pointer size later, run the setup again (or `flatpak override --user --env=XCURSOR_SIZE=<size × 2>`). Telegram is installed from telegram.org instead of Flathub for the same reason.
 - **Anki shows an error about Rev Sync:** update the add-on by running the setup again (or re-installing `rev_sync` from the Rev repository), then restart Anki.
 - **The laptop slows down and fans spin up while mostly idle:** check `sensors`. Around 70 °C at low load usually means dust in the fan or dried thermal paste, not a setting.
-- **A Firefox tab reloads when you go back to it (Arch):** Firefox unloaded it to free memory; that's expected.
 
 ## Credits
 
