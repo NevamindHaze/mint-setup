@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Install (or update) my Claude Code toolkit, on Mint or Arch:
+# Install (or update) my Claude Code toolkit:
 #
 #   bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main/install-claude-toolkit.sh)
 #
 # The Claude Code CLI, the GitHub plugins (Ponytail, LinkedIn Skills, Replica, Taste Skill), the 67
 # design-* skills and OpenMontage. Superpowers, Code Review and the other desktop-app
 # plugins come with the Claude desktop app, so they're not here.
-# Needs Node.js, git, make, Python 3 and Chromium; setup.sh and arch-setup.sh install those first.
+# Needs Node.js, git, make, Python 3 and Chromium; setup.sh installs those first.
 # Run it again any time to update everything.
 
 set -u
@@ -23,7 +23,7 @@ WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 BIN="$HOME/.local/bin"
 mkdir -p "$BIN"
-# Arch doesn't put ~/.local/bin on the PATH by itself (Mint does, from ~/.profile).
+# Put ~/.local/bin on the PATH in every new Terminal, not only after logging in again.
 grep -q '.local/bin' "$HOME/.bashrc" 2>/dev/null || echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
 
 step "Claude Code CLI"
