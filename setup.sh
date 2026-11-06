@@ -40,7 +40,7 @@ if ! command -v apt >/dev/null; then
 fi
 
 echo "${BOLD}Linux Mint setup${RESET}"
-echo "This sets up Helium, Claude Desktop, Node.js, REA, Anki, Rev and the Rev Sync add-on,"
+echo "This sets up Helium, Claude Desktop, Node.js, REA, Anki, Rev, the Rev Sync add-on and fan control,"
 echo "and tunes Mint to stay fast. Type your password when asked (nothing shows while you type)."
 sudo -v || exit 1
 
@@ -106,13 +106,12 @@ if installed firefox && ask "Remove Firefox? (Import its bookmarks into Helium f
     sudo apt purge -y firefox || fail "Removing Firefox failed"
 fi
 
-# ---------- 4b. Bitwarden, Telegram, qBittorrent ----------
-step "Bitwarden, Blip, Telegram and qBittorrent"
-# Bitwarden and Blip from Flathub (Mint's built-in app store source; they update with Update Manager).
-# Blip is also on the Snap Store, but Mint turns Snap off, so Flathub it is.
+# ---------- 4b. Bitwarden, LocalSend, Telegram, Discord, qBittorrent, VLC ----------
+step "Bitwarden, LocalSend, Telegram, Discord, qBittorrent and VLC"
+# Bitwarden and LocalSend from Flathub (Mint's built-in app store source; they update with Update Manager).
 command -v flatpak >/dev/null || sudo apt install -y flatpak
 sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-for app in "Bitwarden com.bitwarden.desktop" "Blip net.blip.Blip"; do
+for app in "Bitwarden com.bitwarden.desktop" "LocalSend org.localsend.localsend_app"; do
     read -r name id <<<"$app"
     if flatpak info "$id" >/dev/null 2>&1; then
         note "$name already installed."
@@ -142,11 +141,21 @@ elif curl -fL --progress-bar -o "$WORK/tsetup.tar.xz" https://telegram.org/dl/de
 else
     fail "Telegram didn't install"
 fi
-if installed qbittorrent; then
-    note "qBittorrent already installed."
+# Discord: the official .deb (Discord has no apt repository; it offers a new .deb when it needs one).
+if installed discord; then
+    note "Discord already installed."
+elif curl -fL --progress-bar -o "$WORK/discord.deb" "https://discord.com/api/download?platform=linux&format=deb"; then
+    sudo apt install -y "$WORK/discord.deb" || fail "Discord didn't install"
 else
-    sudo apt install -y qbittorrent || fail "qBittorrent didn't install"
+    fail "Discord didn't download"
 fi
+for p in qbittorrent vlc; do
+    if installed "$p"; then
+        note "$p already installed."
+    else
+        sudo apt install -y "$p" || fail "$p didn't install"
+    fi
+done
 
 # ---------- 5. Claude Desktop ----------
 step "Claude Desktop"
@@ -208,21 +217,19 @@ else
     fi
 fi
 
-# ---------- 8. Rev (private repo, so it signs in to GitHub) ----------
+# ---------- 8. Rev (from its own apt repository, so it updates with everything else) ----------
 step "Rev"
-if installed rev-flashcards && ! ask "Rev is installed. Reinstall the latest version?" N; then
-    note "Keeping the installed Rev."
+sudo install -d -m 0755 /etc/apt/keyrings
+if [ ! -f /etc/apt/sources.list.d/rev.list ]; then
+    sudo curl -fsSLo /etc/apt/keyrings/rev.gpg https://nevamindhaze.github.io/Rev/rev.gpg
+    echo "deb [signed-by=/etc/apt/keyrings/rev.gpg] https://nevamindhaze.github.io/Rev ./" \
+        | sudo tee /etc/apt/sources.list.d/rev.list >/dev/null
+    sudo apt update
+fi
+if installed rev-flashcards; then
+    note "Already installed (updates come with Update Manager)."
 else
-    command -v gh >/dev/null || sudo apt install -y gh
-    if ! gh auth status >/dev/null 2>&1; then
-        note "Rev-Windows is private, so sign in to GitHub. Choose: GitHub.com, HTTPS, Login with a web browser."
-        gh auth login </dev/tty
-    fi
-    if gh release download -R NevamindHaze/Rev-Windows -p 'rev-flashcards_*_amd64.deb' -D "$WORK" --clobber; then
-        sudo apt install -y "$WORK"/rev-flashcards_*_amd64.deb || fail "Rev didn't install"
-    else
-        fail "Couldn't download Rev from GitHub"
-    fi
+    sudo apt install -y rev-flashcards || fail "Rev didn't install"
 fi
 
 # ---------- 9. Rev Sync add-on for Anki ----------
@@ -263,6 +270,21 @@ if systemctl is-active --quiet earlyoom; then
     note "earlyoom on, $(swapon --show=NAME,SIZE --noheadings | awk '$1=="/dev/zram0"{print $2}') zram, swappiness 60."
 else
     fail "earlyoom isn't running"
+fi
+
+# ---------- 10b. Vivobook fan control ----------
+step "Vivobook fan control"
+if [ ! -f /etc/apt/sources.list.d/vivobook-fan-control.list ]; then
+    sudo install -d -m 0755 /etc/apt/keyrings
+    sudo curl -fsSLo /etc/apt/keyrings/vivobook-fan-control.gpg https://nevamindhaze.github.io/vivobook-fan-control/key.gpg
+    echo "deb [signed-by=/etc/apt/keyrings/vivobook-fan-control.gpg] https://nevamindhaze.github.io/vivobook-fan-control stable main" \
+        | sudo tee /etc/apt/sources.list.d/vivobook-fan-control.list >/dev/null
+    sudo apt update
+fi
+if installed vivobook-fan-control; then
+    note "Already installed."
+else
+    sudo apt install -y vivobook-fan-control || fail "Vivobook fan control didn't install"
 fi
 
 # ---------- 11. updates ----------
@@ -356,7 +378,7 @@ echo "Still to do by hand:"
 echo "  - Anki: sign in under Tools > Sync."
 echo "  - Rev: Settings > Sync with Anki > Choose folder > 'Rev Sync' in your home folder."
 echo "  - iPhone: Anki > Tools > Rev Sync Wi-Fi..., then Rev on iPhone > Settings > Sync over Wi-Fi."
-echo "  - Blip: open it and sign in with the same email as on your phone."
+echo "  - Discord: open it from the Menu and sign in."
 echo "  - Helium: uBlock Origin is built in; turn on Helium services in Settings if you want other extensions."
 echo
 if ask "Restart now? (Needed for Claude's Cowork and some settings.)" Y; then
