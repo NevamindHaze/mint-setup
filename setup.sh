@@ -40,7 +40,7 @@ if ! command -v apt >/dev/null; then
 fi
 
 echo "${BOLD}Linux Mint setup${RESET}"
-echo "This sets up Helium, Claude Desktop, Node.js, REA, Anki, Rev, the Rev Sync add-on, fan control and"
+echo "This sets up Helium, Claude Desktop, Node.js, REA, Anki, Rev, the Rev Sync add-on, fan control,"
 echo "Tailscale and Syncthing (your home server, from anywhere), and tunes Mint to stay fast. Type your password when asked (nothing shows while you type)."
 sudo -v || exit 1
 
