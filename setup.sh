@@ -41,7 +41,7 @@ fi
 
 echo "${BOLD}Linux Mint setup${RESET}"
 echo "This sets up Helium, Claude Desktop, Node.js, REA, Anki, Rev, the Rev Sync add-on, fan control and"
-echo "Syncthing (your files from the home server), and tunes Mint to stay fast. Type your password when asked (nothing shows while you type)."
+echo "Tailscale and Syncthing (your home server, from anywhere), and tunes Mint to stay fast. Type your password when asked (nothing shows while you type)."
 sudo -v || exit 1
 
 # ---------- 1. basics ----------
@@ -363,6 +363,22 @@ step "REA for Claude"
 note "Open Claude Desktop and sign in once first if you haven't."
 if ask "Run REA's setup now? (Tick Claude Desktop and Claude Code with Space, then Enter.)" Y; then
     npx -y rea-agents setup </dev/tty || fail "REA setup didn't finish"
+fi
+
+# ---------- 12b. Tailscale: reach the home server from anywhere ----------
+step "Tailscale (home server from anywhere)"
+# A private network between your own devices: Jellyfin, SSH and Syncthing work away from home too.
+if ! command -v tailscale >/dev/null; then
+    curl -fsSL https://tailscale.com/install.sh | sh || fail "Tailscale didn't install"
+fi
+if command -v tailscale >/dev/null; then
+    if tailscale status >/dev/null 2>&1; then
+        note "Already signed in."
+    elif ask "Sign in to Tailscale now? (It shows a link; open it and use the same account as the server.)" Y; then
+        sudo tailscale up || fail "Tailscale sign-in didn't finish"
+    else
+        note "Sign in later with: sudo tailscale up"
+    fi
 fi
 
 # ---------- 13. Syncthing: get your files back from the home server ----------

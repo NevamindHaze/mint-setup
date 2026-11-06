@@ -40,8 +40,9 @@ bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main
 18. Sets your **profile picture** (`assets/pfp.jpg`)
 19. Installs the **Claude toolkit**: Claude Code, the Ponytail, LinkedIn Skills, Replica and Taste Skill plugins, the 67 `design-*` skills and OpenMontage (`~/OpenMontage`); see [claude-toolkit-guide](https://github.com/NevamindHaze/claude-toolkit-guide)
 20. Runs **REA**'s setup for Claude
-21. Installs **Syncthing** and connects your home folder to the home server (`haze1`), so your files come back after a reinstall (asks first, and asks for the server's ID)
-22. Offers to restart
+21. Installs **Tailscale** and offers to sign in, so the home server (Jellyfin, SSH, Syncthing) works away from home too
+22. Installs **Syncthing** and connects your home folder to the home server (`haze1`), so your files come back after a reinstall (asks first, and asks for the server's ID)
+23. Offers to restart
 
 It's safe to run again: anything already installed is skipped.
 
@@ -84,6 +85,8 @@ Run the setup command at the top of this page. Say **yes** to "Connect your home
    | Ubuntu / Debian / Mint | `sudo apt install syncthing` |
 
 2. Start it, now and at every login: `systemctl --user enable --now syncthing`
+   Also install Tailscale (works on every distro) and sign in with the same account as the server:
+   `curl -fsSL https://tailscale.com/install.sh | sh && sudo tailscale up`
 3. Write the ignore list **before** sharing anything, then connect. Paste this whole block into the terminal, putting the server's ID on the first line:
 
    ```
