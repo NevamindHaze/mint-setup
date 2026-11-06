@@ -57,6 +57,9 @@ It's safe to run again: anything already installed is skipped.
 
 ## Syncing with the home server
 
+Everything about the server itself (phones, Jellyfin, Tailscale, sharing with friends, rebuilding it)
+is in **[HOMESERVER.md](HOMESERVER.md)**.
+
 Your whole home folder syncs to the server, except what's listed in `~/.stignore`: hidden settings and caches at the top level, Syncthing's `~/Sync`, apps this script reinstalls (`Telegram`, `platform-tools`, `OpenMontage`) and rebuildable code folders (`node_modules`, `.venv`, `venv`, `__pycache__`). Ignored folders are never deleted from the server; they just aren't synced. The server keeps deleted or changed files for 30 days in `/DATA/Sync/Home/.stversions`. Your Syncthing page is at `http://127.0.0.1:8384`.
 
 ## After distro hopping
@@ -121,7 +124,8 @@ In the server's Syncthing, under **Remote Devices**, remove the old system's ent
 ### If something looks wrong
 
 - **Files say "sync-conflict" in their names:** the same file existed on both sides with different contents (often a default file a fresh install creates). Keep whichever copy is right and delete the other.
-- **Home stays "Disconnected":** the two devices must be on the same Wi-Fi, and the server must have accepted the new device (step 4).
+- **Home stays "Disconnected":** both devices need to be on the same Wi-Fi or both signed in to Tailscale, and the server must have accepted the new device (step 4).
+- **Not sure which Syncthing page you're on:** the laptop's says **haze** (ID starts GIXN67); the server's says **haze1-server** (ID starts 6HD6CIG).
 - **A file you deleted is missing:** the server keeps deleted and changed files for 30 days in `/DATA/Sync/Home/.stversions` (`ssh haze1@haze1.local`, then `ls /DATA/Sync/Home/.stversions`).
 
 ## Daily tips
@@ -133,6 +137,9 @@ In the server's Syncthing, under **Remote Devices**, remove the old system's ent
 | Update everything | `sudo apt update && sudo apt upgrade` (includes Claude Desktop, Helium, Rev and fan control) |
 | See what earlyoom closed | `journalctl -u earlyoom` |
 | Check adb / fastboot | `adb devices`, or `fastboot devices` with the phone in bootloader mode |
+| Log in to the server | `ssh haze1@haze1.local` at home, `ssh haze1@haze1` anywhere (Tailscale) |
+| Copy a video to Jellyfin | `scp "video.mp4" haze1@haze1.local:/DATA/Media/Movies/`, then Scan All Libraries |
+| Check Syncthing | `http://127.0.0.1:8384` (laptop), CasaOS → Syncthing (server) |
 
 ## Just the Claude toolkit
 
@@ -159,6 +166,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main
 | `setup.sh` | The main script: everything above, in order |
 | `install-claude-toolkit.sh` | Installs or updates only the Claude toolkit |
 | `install-folio.sh` | Installs or updates only Folio (Mint) |
+| `HOMESERVER.md` | The home server: phones, Jellyfin, Tailscale, friends, rebuilding it |
+| `homeserver-setup.sh` | One-time setup for the server itself (run on the server with `sudo`) |
 | `assets/pfp.jpg` | My profile picture |
 
 ## If something goes wrong
