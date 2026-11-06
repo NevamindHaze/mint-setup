@@ -58,6 +58,69 @@ It's safe to run again: anything already installed is skipped.
 
 Your whole home folder syncs to the server, except what's listed in `~/.stignore`: hidden settings and caches at the top level, Syncthing's `~/Sync`, apps this script reinstalls (`Telegram`, `platform-tools`, `OpenMontage`) and rebuildable code folders (`node_modules`, `.venv`, `venv`, `__pycache__`). Ignored folders are never deleted from the server; they just aren't synced. The server keeps deleted or changed files for 30 days in `/DATA/Sync/Home/.stversions`. Your Syncthing page is at `http://127.0.0.1:8384`.
 
+## After distro hopping
+
+Your files live on the home server (`haze1`), so a fresh install only needs to reconnect to it. The new
+system gets a **new Syncthing ID**, which is why the server has to accept it again each time.
+
+### Before you wipe
+
+1. Open your Syncthing page (`http://127.0.0.1:8384`) and check that **Home** says **Up to Date**. Anything not synced yet is lost in the wipe.
+2. Check that Bitwarden's **Home Server (haze1)** note has the server's **full** Syncthing ID and the Folder ID `4thx6-76wis`.
+3. Copy your ignore list somewhere that survives: `cp ~/.stignore ~/Documents/syncthing-ignore.txt`
+
+### Back on Linux Mint
+
+Run the setup command at the top of this page. Say **yes** to "Connect your home folder to the home server" and paste the server's ID. Then do step 4 below.
+
+### On any other Linux (Arch, Fedora, Ubuntu, ...)
+
+1. Install Syncthing:
+
+   | Distro | Command |
+   | --- | --- |
+   | Arch | `sudo pacman -S syncthing` |
+   | Fedora | `sudo dnf install syncthing` |
+   | Ubuntu / Debian / Mint | `sudo apt install syncthing` |
+
+2. Start it, now and at every login: `systemctl --user enable --now syncthing`
+3. Write the ignore list **before** sharing anything, then connect. Paste this whole block into the terminal, putting the server's ID on the first line:
+
+   ```
+   SERVER_ID="PASTE-THE-SERVER-ID-HERE"
+   curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main/setup.sh \
+     | sed -n "/^        cat > \"\$HOME\/.stignore\" <<'EOF'/,/^EOF/p" | sed '1d;$d' > ~/.stignore
+   sleep 5
+   syncthing cli config folders default delete
+   syncthing cli config devices add --device-id "$SERVER_ID" --name haze1
+   syncthing cli config folders add --id 4thx6-76wis --label Home --path "$HOME"
+   syncthing cli config folders 4thx6-76wis devices add --device-id "$SERVER_ID"
+   ```
+
+   The first command copies the ignore list straight out of `setup.sh`, so it's always the current one. Check it with `cat ~/.stignore`; it should start with `/.*`.
+
+4. **Accept it on the server:** open `http://haze1.local` → Syncthing. Click **Add Device** on the new-device banner, then **Share** on the "wants to share folder Home" banner.
+5. Wait for **Home** to say **Up to Date** on `http://127.0.0.1:8384`. Your files are back.
+
+### On Windows
+
+Syncing the whole home folder doesn't suit Windows (it's full of system files), so share only the folders you need:
+
+1. Install Syncthing: `winget install Syncthing.Syncthing`, then open `http://127.0.0.1:8384`.
+2. Click **+ Add Remote Device**, paste the server's ID, name it `haze1`, and **Save**.
+3. Accept the new device on the server, as in step 4 above.
+4. On the server's Syncthing, open **Home** → **Edit** → **Sharing**, and tick the Windows device. On Windows, accept the folder and set its path to something like `C:\Users\<you>\Home`, so it stays separate from Windows' own folders.
+
+### Tidy up on the server afterwards
+
+In the server's Syncthing, under **Remote Devices**, remove the old system's entry (it shows **Disconnected**). Click it → **Edit** → **Remove**. It's dead weight once that system is wiped.
+
+### If something looks wrong
+
+- **Files say "sync-conflict" in their names:** the same file existed on both sides with different contents (often a default file a fresh install creates). Keep whichever copy is right and delete the other.
+- **Home stays "Disconnected":** the two devices must be on the same Wi-Fi, and the server must have accepted the new device (step 4).
+- **A file you deleted is missing:** the server keeps deleted and changed files for 30 days in `/DATA/Sync/Home/.stversions` (`ssh haze1@haze1.local`, then `ls /DATA/Sync/Home/.stversions`).
+
 ## Daily tips
 
 | | |
