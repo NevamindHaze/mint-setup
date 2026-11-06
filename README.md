@@ -8,6 +8,7 @@ One command to set up a fresh Linux Mint (Cinnamon) install the way I like it: m
 - It's made for **Linux Mint 22 Cinnamon** on a 64-bit PC.
 - Open **Timeshift** once and set it up (choose **RSYNC**), so the script can take a snapshot you can roll back to.
 - Keep the laptop plugged in and online; it takes 15 to 30 minutes.
+- Have the **home server's Syncthing ID** ready (in Bitwarden, or on the server's Syncthing page under Actions → Show ID), and be on the same Wi-Fi as the server.
 
 ## Run it
 
@@ -39,7 +40,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/NevamindHaze/mint-setup/main
 18. Sets your **profile picture** (`assets/pfp.jpg`)
 19. Installs the **Claude toolkit**: Claude Code, the Ponytail, LinkedIn Skills, Replica and Taste Skill plugins, the 67 `design-*` skills and OpenMontage (`~/OpenMontage`); see [claude-toolkit-guide](https://github.com/NevamindHaze/claude-toolkit-guide)
 20. Runs **REA**'s setup for Claude
-21. Offers to restart
+21. Installs **Syncthing** and connects your home folder to the home server (`haze1`), so your files come back after a reinstall (asks first, and asks for the server's ID)
+22. Offers to restart
 
 It's safe to run again: anything already installed is skipped.
 
@@ -50,6 +52,11 @@ It's safe to run again: anything already installed is skipped.
 - **iPhone:** in Anki, Tools → Rev Sync Wi-Fi…; on the iPhone, Rev → Settings → Sync over Wi-Fi.
 - **Discord:** open it from the Menu and sign in.
 - **Helium:** uBlock Origin comes built in. To add other extensions, turn on Helium services in Settings.
+- **Home server:** open `http://haze1.local` → Syncthing. Click **Add Device** on the new-device banner, then **Share** on the "wants to share folder Home" banner. Your files then download by themselves. Remove the old laptop's entry there once everything is back.
+
+## Syncing with the home server
+
+Your whole home folder syncs to the server, except what's listed in `~/.stignore`: hidden settings and caches at the top level, Syncthing's `~/Sync`, apps this script reinstalls (`Telegram`, `platform-tools`, `OpenMontage`) and rebuildable code folders (`node_modules`, `.venv`, `venv`, `__pycache__`). Ignored folders are never deleted from the server; they just aren't synced. The server keeps deleted or changed files for 30 days in `/DATA/Sync/Home/.stversions`. Your Syncthing page is at `http://127.0.0.1:8384`.
 
 ## Daily tips
 

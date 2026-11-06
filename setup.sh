@@ -40,8 +40,8 @@ if ! command -v apt >/dev/null; then
 fi
 
 echo "${BOLD}Linux Mint setup${RESET}"
-echo "This sets up Helium, Claude Desktop, Node.js, REA, Anki, Rev, the Rev Sync add-on and fan control,"
-echo "and tunes Mint to stay fast. Type your password when asked (nothing shows while you type)."
+echo "This sets up Helium, Claude Desktop, Node.js, REA, Anki, Rev, the Rev Sync add-on, fan control and"
+echo "Syncthing (your files from the home server), and tunes Mint to stay fast. Type your password when asked (nothing shows while you type)."
 sudo -v || exit 1
 
 # ---------- 1. basics ----------
@@ -365,6 +365,70 @@ if ask "Run REA's setup now? (Tick Claude Desktop and Claude Code with Space, th
     npx -y rea-agents setup </dev/tty || fail "REA setup didn't finish"
 fi
 
+# ---------- 13. Syncthing: get your files back from the home server ----------
+step "Syncthing (files from the home server)"
+# The home server (haze1) keeps a copy of everything in your home folder. This connects a fresh
+# install to it and shares the home folder under the same Folder ID, so your files come back.
+SYNC_FOLDER_ID="4thx6-76wis"   # the "Home" folder on the server; it must match exactly
+SYNC_SERVER_NAME="haze1"
+if ! installed syncthing; then
+    sudo apt install -y syncthing || fail "Syncthing didn't install"
+fi
+if installed syncthing; then
+    systemctl --user enable --now syncthing >/dev/null 2>&1 || fail "Syncthing didn't start"
+
+    # What NOT to sync. It has to be in place before the folder is added, or Syncthing would
+    # start on hidden settings and caches. If it's already there, your own version is kept.
+    if [ ! -f "$HOME/.stignore" ]; then
+        cat > "$HOME/.stignore" <<'EOF'
+// Hidden app data and settings (top level only; .git folders inside projects still sync)
+/.*
+// Syncthing's own starter folder
+/Sync
+// Apps and tools this script reinstalls anyway
+/Telegram
+/platform-tools
+/OpenMontage
+// Rebuildable code clutter, anywhere
+node_modules
+.venv
+venv
+__pycache__
+EOF
+        note "Wrote the ignore list to ~/.stignore."
+    fi
+
+    # Syncthing needs a few seconds to start the first time (it makes its keys).
+    for _ in $(seq 30); do syncthing cli show system >/dev/null 2>&1 && break; sleep 1; done
+
+    if ! syncthing cli show system >/dev/null 2>&1; then
+        fail "Syncthing isn't answering, so the home folder wasn't connected"
+    elif syncthing cli config folders list 2>/dev/null | grep -qx "$SYNC_FOLDER_ID"; then
+        note "Already connected to the server."
+    elif ask "Connect your home folder to the home server now?" Y; then
+        note "On the server's Syncthing page (http://$SYNC_SERVER_NAME.local), click Actions > Show ID."
+        note "It's the long code like XXXXXXX-XXXXXXX-... (also saved in Bitwarden)."
+        read -r -p "    Paste the server's ID here: " server_id </dev/tty || server_id=""
+        server_id=$(echo "$server_id" | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
+        if [[ ! $server_id =~ ^[A-Z0-9]{7}(-[A-Z0-9]{7}){7}$ ]]; then
+            fail "That doesn't look like a Syncthing ID, so the home folder wasn't connected"
+        else
+            # Syncthing's empty starter folder (~/Sync) would sit inside the home folder.
+            syncthing cli config folders list 2>/dev/null | grep -qx default \
+                && syncthing cli config folders default delete
+            syncthing cli config devices list | grep -qx "$server_id" \
+                || syncthing cli config devices add --device-id "$server_id" --name "$SYNC_SERVER_NAME"
+            if syncthing cli config folders add --id "$SYNC_FOLDER_ID" --label Home --path "$HOME" \
+                && syncthing cli config folders "$SYNC_FOLDER_ID" devices add --device-id "$server_id"; then
+                SYNC_ACCEPT=1
+                note "Connected. Now accept it on the server (see the list at the end)."
+            else
+                fail "Couldn't add the home folder to Syncthing"
+            fi
+        fi
+    fi
+fi
+
 # ---------- done ----------
 step "Done"
 if [ ${#FAILED[@]} -gt 0 ]; then
@@ -380,6 +444,10 @@ echo "  - Rev: Settings > Sync with Anki > Choose folder > 'Rev Sync' in your ho
 echo "  - iPhone: Anki > Tools > Rev Sync Wi-Fi..., then Rev on iPhone > Settings > Sync over Wi-Fi."
 echo "  - Discord: open it from the Menu and sign in."
 echo "  - Helium: uBlock Origin is built in; turn on Helium services in Settings if you want other extensions."
+if [ "${SYNC_ACCEPT:-0}" = 1 ]; then
+    echo "  - Home server: open http://haze1.local > Syncthing. Click 'Add Device' on the new-device banner,"
+    echo "    then 'Share' on the 'wants to share folder Home' banner. Your files then download by themselves."
+fi
 echo
 if ask "Restart now? (Needed for Claude's Cowork and some settings.)" Y; then
     systemctl reboot -i
